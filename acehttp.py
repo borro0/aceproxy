@@ -131,6 +131,12 @@ class HTTPHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             self.video.close()
             self.closeConnection()
 
+    def send_packet(self):
+    	#TODO add CSV add function call
+		self.byte_counter = 0
+		del self.current_packet_list[:]
+
+
     def parse_data(self, data_chunk):
         # possible states: search for sync byte, in_sync
         logger.debug("Reading a new data_chunk")        
@@ -143,12 +149,15 @@ class HTTPHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 						logger.debug("We are in sync now")
 						self.in_sync = True
 					logger.debug("Sync byte found after %i, resetting counter" % self.byte_counter)
-					self.byte_counter = 0
-					del self.current_packet_list[:]
+					self.send_packet()
 
 				elif self.byte_counter > 188:
-					logger.debug("Sync byte found after %i, resetting counter" % self.byte_counter)
-					self.byte_counter = 0
+					if not self.in_sync:
+						logger.debug("Not in sync yet, sync byte found after %i, resetting counter" % self.byte_counter)
+						self.byte_counter = 0
+					else:
+						logger.error("We received a longer byte than expected: %i" % self.byte_counter)
+						self.send_packet()
 
 				# Check the current packet list does not get too long
 				if len(self.current_packet_list) > 1000:
