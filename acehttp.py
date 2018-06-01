@@ -45,8 +45,10 @@ class HTTPHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
     requestlist = []
 
-    http_queue = deque ([])
     byte_counter = 0
+
+    current_packet_list = []
+    in_sync = False
 
     def handle_one_request(self):
         '''
@@ -116,8 +118,7 @@ class HTTPHandler(BaseHTTPServer.BaseHTTPRequestHandler):
                     break
 
                 data = self.video.read(4096)
-                #self.http_queue.append(data)
-                #self.parse_data()
+                self.parse_data(data)
                 if data and self.clientconnected:
                     self.wfile.write(data)
                 else:
@@ -130,17 +131,35 @@ class HTTPHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             self.video.close()
             self.closeConnection()
 
-    def parse_data(self):
+    def parse_data(self, data_chunk):
         # possible states: search for sync byte, in_sync
-        while (len(self.http_queue) != 0):
-            self.data_chunk = self.http_queue.pop()            
-            for byte in self.data_chunk:
-	            self.read_byte = byte
-	            self.byte_counter += 1
-	            # logger.debug(hex(ord(self.read_byte)))
-	            if self.read_byte == 'G':
-	                logger.debug("Sync byte found after %i, resetting counter" % self.byte_counter)
-	                self.byte_counter = 0
+        logger.debug("Reading a new data_chunk")        
+        for byte in data_chunk:
+            self.byte_counter += 1
+            # logger.debug(hex(ord(byte)))
+            if byte == 'G':
+				if self.byte_counter == 188:
+					if not self.in_sync:
+						logger.debug("We are in sync now")
+						self.in_sync = True
+					logger.debug("Sync byte found after %i, resetting counter" % self.byte_counter)
+					self.byte_counter = 0
+					del self.current_packet_list[:]
+
+				elif self.byte_counter > 188:
+					logger.debug("Sync byte found after %i, resetting counter" % self.byte_counter)
+					self.byte_counter = 0
+
+				# Check the current packet list does not get too long
+				if len(self.current_packet_list) > 1000:
+					logger.debug("Lise size is over 1000, something is wrong")
+					del self.current_packet_list[:]
+
+				# Append our new byte to the current list packet
+				if self.in_sync:
+					self.current_packet_list.append(byte)
+
+
 
 
     def hangDetector(self):
