@@ -1,6 +1,10 @@
 import time
 from multiprocessing import Event
+<<<<<<< HEAD
 from Queue import Empty
+=======
+from queue import Empty
+>>>>>>> 0bb9322e507790d3fc6010cfee1e917db7a0f2fd
 
 stop_command = Event()
 
