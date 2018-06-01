@@ -10,6 +10,9 @@ import gevent
 import gevent.monkey
 # Monkeypatching and all the stuff
 
+# Custom Scripts
+from csvwriter import CSVWriter
+
 gevent.monkey.patch_all()
 from datetime import datetime
 import glob
@@ -32,13 +35,13 @@ import plugins.modules.ipaddr as ipaddr
 from aceclient.clientcounter import ClientCounter
 from plugins.modules.PluginInterface import AceProxyPlugin
 from collections import deque
+from multiprocessing import Process, Queue
 try:
     import pwd
     import grp
 except ImportError:
     # Windows
     pass
-
 
 
 class HTTPHandler(BaseHTTPServer.BaseHTTPRequestHandler):
@@ -132,10 +135,10 @@ class HTTPHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             self.closeConnection()
 
     def send_packet(self):
-    	#TODO add CSV add function call
-		self.byte_counter = 0
-		del self.current_packet_list[:]
-
+    	packet = "".join(self.current_packet_list)
+    	writer_q.put(packet)
+	self.byte_counter = 0
+        del self.current_packet_list[:]
 
     def parse_data(self, data_chunk):
         # possible states: search for sync byte, in_sync
@@ -685,6 +688,8 @@ def shutdown(signum = 0, frame = 0):
             connection.closeConnection()
         except:
             logger.warning("Cannot kill a connection!")
+    csv_w.stop()
+    w_process.join()
     clean_proc()
     server.server_close()
     sys.exit()
@@ -758,6 +763,17 @@ if AceConfig.osplatform == 'Windows':
     # Wait some time because ace engine refreshes the acestream.port file only after full loading...
     gevent.sleep(AceConfig.acestartuptimeout)
     detectPort()
+
+# Custom output data inits #############
+# TODO Take filename from kwargs
+output_filename = "OUTPUT"
+writer_q = Queue()
+csv_w = CSVWriter(output_filename)
+w_process = Process(target=csv_w.writer, args=(writer_q,))
+w_process.start()
+logger.info("Writer started with pid {0}, filename: {1}".format(w_process.pid,
+                                                                output_filename))
+#################################
 
 try:
     logger.info("Using gevent %s" % gevent.__version__)
