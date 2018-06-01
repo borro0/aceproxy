@@ -170,7 +170,8 @@ class HTTPHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 				# Append our new byte to the current list packet
 				if self.in_sync:
 					self.current_packet_list.append(byte)
-
+            else:
+                self.current_packet_list.append(byte)
 
 
 

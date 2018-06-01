@@ -1,10 +1,7 @@
 import time
 from multiprocessing import Event
-<<<<<<< HEAD
 from Queue import Empty
-=======
-from queue import Empty
->>>>>>> 0bb9322e507790d3fc6010cfee1e917db7a0f2fd
+import hashlib
 
 stop_command = Event()
 
@@ -30,8 +27,9 @@ class CSVWriter(object):
                     pass
 
     def hash_data(self, packet):
-        # TODO Hash the packet with some hash function
-        return packet
+        hash_object = hashlib.sha1(packet)
+        hex_dig = hash_object.hexdigest()
+        return hex_dig
 
     def stop(self):
         global stop_command
