@@ -85,7 +85,7 @@ class AceConfig(acedefconfig.AceDefConfig):
     # To use this, you should install VLC first
     # And run it with:
     # vlc -I telnet --clock-jitter 0 --network-caching 500 --telnet-pass admin
-    vlcuse = False
+    vlcuse = True#False
     # Use AceStream player that comes with engine
     # If true than proxy will detect a path to ace_player.exe and ace_player.exe will be spawned
     # It also will not check if vlc.exe is running, it will watch over ace_player.exe process
@@ -127,19 +127,19 @@ class AceConfig(acedefconfig.AceDefConfig):
     # !!!
     # PLEASE set this to 0 if you use VLC
     # !!!
-    videodelay = 2
+    videodelay = 0#2
     # Obey PAUSE and RESUME commands from Engine
     # (stops sending data to client, should prevent annoying buffering)
     # !!!
     # PLEASE set this to False if you use VLC
     # !!!
-    videoobey = True
+    videoobey = False#True
     # Stream send delay after PAUSE/RESUME commands (works only if option
     # above is enabled)
     # !!!
     # PLEASE set this to 0 if you use VLC
     # !!!
-    videopausedelay = 2
+    videopausedelay = 0#2
     # Seek back feature.
     # Seeks stream back for specified amount of seconds.
     # Greatly helps fighing AceSteam lags, but introduces

@@ -11,6 +11,7 @@ import gevent.monkey
 # Monkeypatching and all the stuff
 
 gevent.monkey.patch_all()
+from datetime import datetime
 import glob
 import os
 import signal
@@ -30,6 +31,7 @@ import vlcclient
 import plugins.modules.ipaddr as ipaddr
 from aceclient.clientcounter import ClientCounter
 from plugins.modules.PluginInterface import AceProxyPlugin
+from collections import deque
 try:
     import pwd
     import grp
@@ -42,6 +44,9 @@ except ImportError:
 class HTTPHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
     requestlist = []
+
+    http_queue = deque ([])
+    byte_counter = 0
 
     def handle_one_request(self):
         '''
@@ -111,6 +116,8 @@ class HTTPHandler(BaseHTTPServer.BaseHTTPRequestHandler):
                     break
 
                 data = self.video.read(4096)
+                #self.http_queue.append(data)
+                #self.parse_data()
                 if data and self.clientconnected:
                     self.wfile.write(data)
                 else:
@@ -122,6 +129,19 @@ class HTTPHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         finally:
             self.video.close()
             self.closeConnection()
+
+    def parse_data(self):
+        # possible states: search for sync byte, in_sync
+        while (len(self.http_queue) != 0):
+            self.data_chunk = self.http_queue.pop()            
+            for byte in self.data_chunk:
+	            self.read_byte = byte
+	            self.byte_counter += 1
+	            # logger.debug(hex(ord(self.read_byte)))
+	            if self.read_byte == 'G':
+	                logger.debug("Sync byte found after %i, resetting counter" % self.byte_counter)
+	                self.byte_counter = 0
+
 
     def hangDetector(self):
         '''
