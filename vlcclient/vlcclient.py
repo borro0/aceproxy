@@ -4,7 +4,10 @@ Minimal VLC VLM client for AceProxy. Client class.
 
 import gevent
 import gevent.event
-import gevent.coros
+try:
+	import gevent.coros as coros
+except:
+	import gevent.lock as coros
 import telnetlib
 import logging
 from vlcmessages import *
@@ -40,7 +43,7 @@ class VlcClient(object):
         # Authentication done event
         self._auth = gevent.event.AsyncResult()
         # Request lock
-        self._resultlock = gevent.coros.RLock()
+        self._resultlock = coros.RLock()
         # Request result
         self._result = gevent.event.AsyncResult()
         # VLC version string
