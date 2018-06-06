@@ -43,6 +43,8 @@ except ImportError:
     # Windows
     pass
 
+logging.getLogger('apscheduler.scheduler').setLevel('WARNING')
+logging.getLogger('apscheduler.executor').setLevel('WARNING')
 
 class HTTPHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
@@ -769,7 +771,7 @@ if AceConfig.osplatform == 'Windows':
 # TODO Take filename from kwargs
 output_filename = "OUTPUT"
 writer_q = Queue()
-csv_w = CSVWriter(output_filename)
+csv_w = CSVWriter(output_filename, writer_q)
 w_process = Process(target=csv_w.writer, args=(writer_q,))
 w_process.start()
 logger.info("Writer started with pid {0}, filename: {1}".format(w_process.pid,

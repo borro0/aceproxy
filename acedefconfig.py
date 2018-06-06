@@ -20,7 +20,7 @@ class AceDefConfig(object):
     acestartuptimeout = 10
     aceconntimeout = 5
     aceresulttimeout = 10
-    debug = logging.DEBUG
+    debug = logging.INFO
     #
     httphost = '0.0.0.0'
     httpport = 8000
