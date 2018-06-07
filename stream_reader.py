@@ -58,7 +58,7 @@ if __name__ == '__main__':
     #freeze_support()
     # Custom output data inits #############
     # TODO Take filename from kwargs
-    output_filename = sys.argv[2] if 2 in sys.argv else "OUTPUT"
+    output_filename = sys.argv[2] if len(sys.argv) >= 2 else "OUTPUT"
     writer_q = Queue()
     csv_w = CSVWriter(output_filename, writer_q)
     w_process = Process(target=csv_w.writer, args=(writer_q,))

@@ -2,27 +2,31 @@
 
 import sys
 import io
-import fcntl
 
 time_marker = 0x00
 
 def main():
     reference = datalog(sys.argv[1])
     comparison = datalog(sys.argv[2])
+    sync=0
 
     #We assume the reference contains all data contained in the comparison
+
     for hash in reference:
         try:
             if comparison.next() != hash:
                 comparison.back()
-
-                if reference.position() % 100000 == 0:
-                        print("No Match found at: ref:{} cmp:{} \n".format(reference.position(), comparison.position()))
+                if sync > 10:
+                        #if reference.position() > 205940 and reference.position() < 205955:
+                        print("Lost sync at: ref:{} ({}) cmp:{} ({})  \n".format(reference.position(), reference.peek(),comparison.position(),  comparison.peek()))
+                sync = 0
                 continue
             else:
+                #if reference.position() > 205500 and reference.position() < 206500:
                 if reference.position() % 10000 == 0:
-                        print("Match found at: ref:{} cmp:{} \n".format(reference.position(), comparison.position()))
+                        print("Synchronized: ref:{} cmp:{} sync:{} \n".format(reference.position(), comparison.position(),sync))
                 #comparison.next()
+                sync+=1
                 comparison.set_datapoint_value(comparison.cur_timestamp - reference.cur_timestamp)
         except StopIteration:
             break
@@ -30,35 +34,38 @@ def main():
     print("finished\n")
 
     #print results
-    for val in comparison.datapoints:
-        print(val)
+    #for val in comparison.delaydata:
+    #    print((val,)
 
 
 
 class datalog:
     fd = 0
     cur_timestamp = 0
-    time_marker = 0x00
+    time_marker = b'\x00'
 
     starttime =0
     timelength = 0
+    pos = 0
+    cur_bw = 0;
 
-    datapoints = []
+    delaydata = []
+    bandwidth = []
 
     def position(self):
-        return self.fd.tell()
+        return self.pos
 
     def __init__(self, filename):
         self.fd = open(filename, 'rb',buffering=2*18)
 
-        fd = self.fd.fileno()
-        fl = fcntl.fcntl(fd, fcntl.F_GETFL)
-        fcntl.fcntl(fd, fcntl.F_SETFL, fl | os.O_NONBLOCK)
         # self.starttime = int.frombytes(fd.read(4))
         # self.timelength = int.frombytes(fd.read(4))
         self.timelength = 10000
         self.cur_timestamp =self.starttime
-        self.datapoints = [0]*self.timelength
+        self.delaydata = [0]
+        self.bandwidth = [0]
+
+
 
     def __iter__(self):
         return self
@@ -67,10 +74,15 @@ class datalog:
         byte = self.fd.read(1);
         if byte == self.time_marker:
             self.cur_timestamp += 1
+            self.bandwidth = self.bandwidth + [0]
+            self.bandwidth[self.cur_timestamp] = self.cur_bw
+            self.cur_bw = 0
             return self.__next__()
-        if byte == '' :
+        if byte == b'' :
             raise StopIteration() 
         else:
+            self.pos+=1
+            self.cur_bw += 1
             return byte
 
 
@@ -86,10 +98,12 @@ class datalog:
         return byte
 
     def back(self):
+        self.pos-=1
         self.fd.seek(-1,1)
 
     def set_datapoint_value(self,val):
-        self.datapoints[self.cur_timestamp-self.starttime] = val
+        self.delaydata = self.delaydata + [0]*(self.cur_timestamp - len(self.delaydata) +1)
+        self.delaydata[self.cur_timestamp-self.starttime] = val
 
 
 if __name__ == "__main__":

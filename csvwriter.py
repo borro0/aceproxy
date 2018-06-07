@@ -26,13 +26,14 @@ class CSVWriter(object):
             while not queue.empty() or not stop_command.is_set():
                 try:
                     data = queue.get_nowait()
-                    if len(data) < 6 and data[0] == '$':
+                    if len(data) < 6 and data == "$101$":
                         f.write(b'\x00')
                     else:
                         hashed_data = self.hash_data(data)
                         # Floating point of time since epoch in seconds
                         # f.write("{0}|{1}\n,".format(str(hashed_data), ts))
-                        f.write(bytearray(hashed_data))
+
+                        f.write(hashed_data[0] if hashed_data[0] != 0 else 1)
                 except Empty:
                     # This should never happen
                     pass
