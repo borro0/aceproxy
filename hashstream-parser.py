@@ -2,6 +2,7 @@
 
 import sys
 import io
+import csv
 
 time_marker = 0x00
 
@@ -31,7 +32,15 @@ def main():
         except StopIteration:
             break
 
-    print("finished\n")
+    print("finished, writing results\n")
+    print((comparison.timelength, len(comparison.delaydata), len(comparison.bandwidth)))
+    with open(sys.argv[3], 'w') as csvfile:
+
+        writer = csv.DictWriter(csvfile, fieldnames=['timestamp','delay','bandwidth'], dialect='excel')
+        writer.writeheader()
+        for x in range(0,comparison.timelength-10):
+            writer.writerow({'timestamp': x+comparison.starttime, 'delay': comparison.delaydata[x], 'bandwidth': comparison.bandwidth[x]})
+
 
     #print results
     #for val in comparison.delaydata:
@@ -58,9 +67,9 @@ class datalog:
     def __init__(self, filename):
         self.fd = open(filename, 'rb',buffering=2*18)
 
-        # self.starttime = int.frombytes(fd.read(4))
+        self.starttime = int.from_bytes(self.fd.read(4),byteorder='big')
         # self.timelength = int.frombytes(fd.read(4))
-        self.timelength = 10000
+        #self.timelength = 10000
         self.cur_timestamp =self.starttime
         self.delaydata = [0]
         self.bandwidth = [0]
@@ -74,9 +83,11 @@ class datalog:
         byte = self.fd.read(1);
         if byte == self.time_marker:
             self.cur_timestamp += 1
+            self.timelength += 1
             self.bandwidth = self.bandwidth + [0]
-            self.bandwidth[self.cur_timestamp] = self.cur_bw
+            self.bandwidth[self.cur_timestamp-self.starttime] = self.cur_bw
             self.cur_bw = 0
+            self.set_datapoint_value(0)
             return self.__next__()
         if byte == b'' :
             raise StopIteration() 
