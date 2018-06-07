@@ -1,6 +1,7 @@
 
 
 import sys
+import io
 
 time_marker = 0x00
 
@@ -11,13 +12,18 @@ def main():
 	#We assume the reference contains all data contained in the comparison
 	for hash in reference:
 		try:
-			if comparison.peek() != hash:
+			if comparison.next() != hash:
+				comparison.back()
 				continue
-			else
-				comparison.next()
+			else:
+				if reference.position() % 100000 == 0:
+						print("Match found at: ref:{} cmp:{} \n".format(reference.position(), comparison.position()))
+				#comparison.next()
 				comparison.set_datapoint_value(comparison.cur_timestamp - reference.cur_timestamp)
 		except StopIteration:
 			break
+
+	print("finished\n")
 
 	#print results
 	for val in comparison.datapoints:
@@ -35,33 +41,45 @@ class datalog:
 
 	datapoints = []
 
+	def position(self):
+		return self.fd.tell()
+
 	def __init__(self, filename):
-		self.fd = open(filename, 'rb')
-		self.starttime = int.frombytes(fd.read(4))
-		self.timelength = int.frombytes(fd.read(4))
+		self.fd = open(filename, 'rb',buffering=2*18)
+		# self.starttime = int.frombytes(fd.read(4))
+		# self.timelength = int.frombytes(fd.read(4))
+		self.timelength = 10000
 		self.cur_timestamp =self.starttime
-		self.datpaoints = [0]*self.timelength
+		self.datapoints = [0]*self.timelength
 
 	def __iter__(self):
 		return self
 
-	def next(self):
+	def __next__(self):
 		byte = self.fd.read(1);
 		if byte == self.time_marker:
 			self.cur_timestamp += 1
-			return self.next()
+			return self.__next__()
 		if byte == '' :
 			raise StopIteration() 
-		else
+		else:
 			return byte
 
+
+	def next(self):
+		return self.__next__()
+
 	def peek(self):
+		#return self.fd.peek(1)
 		byte = self.fd.read(1)
-		self.fd.seek(-1)
+		self.fd.seek(-1,1)
 		return byte
 
-	def set_datapoint_value(val):
-		self.datapoints[cur_timestamp-starttime] = val
+	def back(self):
+		self.fd.seek(-1,1)
+
+	def set_datapoint_value(self,val):
+		self.datapoints[self.cur_timestamp-self.starttime] = val
 
 
 if __name__ == "__main__":
