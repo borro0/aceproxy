@@ -771,7 +771,7 @@ if AceConfig.osplatform == 'Windows':
 # TODO Take filename from kwargs
 output_filename = "OUTPUT"
 writer_q = Queue()
-csv_w = CSVWriter(output_filename, writer_q)
+csv_w = CSVWriter(output_filename)
 w_process = Process(target=csv_w.writer, args=(writer_q,))
 w_process.start()
 logger.info("Writer started with pid {0}, filename: {1}".format(w_process.pid,
