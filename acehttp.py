@@ -43,6 +43,8 @@ except ImportError:
     # Windows
     pass
 
+logging.getLogger('apscheduler.scheduler').setLevel('WARNING')
+logging.getLogger('apscheduler.executor').setLevel('WARNING')
 
 class HTTPHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
@@ -137,12 +139,12 @@ class HTTPHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     def send_packet(self):
     	packet = "".join(self.current_packet_list)
     	writer_q.put(packet)
-	self.byte_counter = 0
+        self.byte_counter = 0
         del self.current_packet_list[:]
 
     def parse_data(self, data_chunk):
         # possible states: search for sync byte, in_sync
-        logger.debug("Reading a new data_chunk")        
+        #logger.debug("Reading a new data_chunk")        
         for byte in data_chunk:
             self.byte_counter += 1
             # logger.debug(hex(ord(byte)))
@@ -151,7 +153,7 @@ class HTTPHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 					if not self.in_sync:
 						logger.debug("We are in sync now")
 						self.in_sync = True
-					logger.debug("Sync byte found after %i, resetting counter" % self.byte_counter)
+					#logger.debug("Sync byte found after %i, resetting counter" % self.byte_counter)
 					self.send_packet()
 
 				elif self.byte_counter > 188:
@@ -769,7 +771,7 @@ if AceConfig.osplatform == 'Windows':
 # TODO Take filename from kwargs
 output_filename = "OUTPUT"
 writer_q = Queue()
-csv_w = CSVWriter(output_filename)
+csv_w = CSVWriter(output_filename, writer_q)
 w_process = Process(target=csv_w.writer, args=(writer_q,))
 w_process.start()
 logger.info("Writer started with pid {0}, filename: {1}".format(w_process.pid,
