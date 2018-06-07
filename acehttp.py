@@ -767,46 +767,48 @@ if AceConfig.osplatform == 'Windows':
     gevent.sleep(AceConfig.acestartuptimeout)
     detectPort()
 
-# Custom output data inits #############
-# TODO Take filename from kwargs
-output_filename = "OUTPUT"
-writer_q = Queue()
-csv_w = CSVWriter(output_filename, writer_q)
-w_process = Process(target=csv_w.writer, args=(writer_q,))
-w_process.start()
-logger.info("Writer started with pid {0}, filename: {1}".format(w_process.pid,
-                                                                output_filename))
-#################################
 
-try:
-    logger.info("Using gevent %s" % gevent.__version__)
-    logger.info("Using psutil %s" % psutil.__version__)
-    if AceConfig.vlcuse:
-         logger.info("Using VLC %s" % AceStuff.vlcclient._vlcver)
-    logger.info("Server started.")
-    while True:
-        if AceConfig.vlcuse and AceConfig.vlcspawn:
-            if not isRunning(AceStuff.vlc):
-                del AceStuff.vlc
-                if spawnVLC(AceStuff.vlcProc, AceConfig.vlcspawntimeout) and connectVLC():
-                    logger.info("VLC died, respawned it with pid " + str(AceStuff.vlc.pid))
+if __name__ == '__main__':
+    # Custom output data inits #############
+    # TODO Take filename from kwargs
+    output_filename = "OUTPUT"
+    writer_q = Queue()
+    csv_w = CSVWriter(output_filename, writer_q)
+    w_process = Process(target=csv_w.writer, args=(writer_q,))
+    w_process.start()
+    logger.info("Writer started with pid {0}, filename: {1}".format(w_process.pid,
+                                                                    output_filename))
+    #################################
+
+    try:
+        logger.info("Using gevent %s" % gevent.__version__)
+        logger.info("Using psutil %s" % psutil.__version__)
+        if AceConfig.vlcuse:
+             logger.info("Using VLC %s" % AceStuff.vlcclient._vlcver)
+        logger.info("Server started.")
+        while True:
+            if AceConfig.vlcuse and AceConfig.vlcspawn:
+                if not isRunning(AceStuff.vlc):
+                    del AceStuff.vlc
+                    if spawnVLC(AceStuff.vlcProc, AceConfig.vlcspawntimeout) and connectVLC():
+                        logger.info("VLC died, respawned it with pid " + str(AceStuff.vlc.pid))
+                    else:
+                        logger.error("Cannot spawn VLC!")
+                        clean_proc()
+                        sys.exit(1)
+            if AceConfig.acespawn and not isRunning(AceStuff.ace):
+                del AceStuff.ace
+                if spawnAce(AceStuff.aceProc, 1):
+                    logger.info("Ace Stream died, respawned it with pid " + str(AceStuff.ace.pid))
+                    if AceConfig.osplatform == 'Windows':
+                        # Wait some time because ace engine refreshes the acestream.port file only after full loading...
+                        gevent.sleep(AceConfig.acestartuptimeout)
+                        detectPort()
                 else:
-                    logger.error("Cannot spawn VLC!")
+                    logger.error("Cannot spawn Ace Stream!")
                     clean_proc()
                     sys.exit(1)
-        if AceConfig.acespawn and not isRunning(AceStuff.ace):
-            del AceStuff.ace
-            if spawnAce(AceStuff.aceProc, 1):
-                logger.info("Ace Stream died, respawned it with pid " + str(AceStuff.ace.pid))
-                if AceConfig.osplatform == 'Windows':
-                    # Wait some time because ace engine refreshes the acestream.port file only after full loading...
-                    gevent.sleep(AceConfig.acestartuptimeout)
-                    detectPort()
-            else:
-                logger.error("Cannot spawn Ace Stream!")
-                clean_proc()
-                sys.exit(1)
-        # Return to our server tasks
-        server.handle_request()
-except (KeyboardInterrupt, SystemExit):
-    shutdown()
+            # Return to our server tasks
+            server.handle_request()
+    except (KeyboardInterrupt, SystemExit):
+        shutdown()

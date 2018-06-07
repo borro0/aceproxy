@@ -28,10 +28,11 @@ class CSVWriter(object):
                     data = queue.get_nowait()
                     if len(data) < 6 and data[0] == '$':
                         f.write(b'\x00')
-                    hashed_data = self.hash_data(data)
-                    # Floating point of time since epoch in seconds
-                    # f.write("{0}|{1}\n,".format(str(hashed_data), ts))
-                    f.write(bytearray(hashed_data))
+                    else:
+                        hashed_data = self.hash_data(data)
+                        # Floating point of time since epoch in seconds
+                        # f.write("{0}|{1}\n,".format(str(hashed_data), ts))
+                        f.write(bytearray(hashed_data))
                 except Empty:
                     # This should never happen
                     pass
@@ -39,7 +40,7 @@ class CSVWriter(object):
 
     def hash_data(self, packet):
         hash_object = hashlib.sha1(packet)
-        hex_dig = hash_object.hexdigest()
+        hex_dig = hash_object.digest()
         return hex_dig
 
     def stop(self):
