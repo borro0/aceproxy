@@ -67,7 +67,9 @@ class datalog:
     def __init__(self, filename):
         self.fd = open(filename, 'rb',buffering=2*18)
 
-        self.starttime = int.from_bytes(self.fd.read(4),byteorder='big')
+        self.starttime = int.from_bytes(self.fd.read(8),byteorder='big')
+
+        print( filename + "started at "+ str(self.starttime))
         # self.timelength = int.frombytes(fd.read(4))
         #self.timelength = 10000
         self.cur_timestamp =self.starttime
@@ -81,14 +83,14 @@ class datalog:
 
     def __next__(self):
         byte = self.fd.read(1);
-        if byte == self.time_marker:
+        while byte == self.time_marker:
             self.cur_timestamp += 1
             self.timelength += 1
             self.bandwidth = self.bandwidth + [0]
             self.bandwidth[self.cur_timestamp-self.starttime] = self.cur_bw
             self.cur_bw = 0
             self.set_datapoint_value(0)
-            return self.__next__()
+            byte = self.fd.read(1)
         if byte == b'' :
             raise StopIteration() 
         else:

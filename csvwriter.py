@@ -23,6 +23,7 @@ class CSVWriter(object):
 
     def writer(self, queue):
         with open(self.filename, 'wb+') as f:
+            f.write(int(time.time()*10).to_bytes(8,byteorder='big'))
             while not queue.empty() or not stop_command.is_set():
                 try:
                     data = queue.get_nowait()
