@@ -23,7 +23,8 @@ class CSVWriter(object):
 
     def writer(self, queue):
         with open(self.filename, 'wb+') as f:
-            f.write(int(time.time()*10).to_bytes(8,byteorder='big'))
+            n = int(time.time()*10)
+            f.write(self.to_bytes(n,8,endianess='big'))
             while not queue.empty() or not stop_command.is_set():
                 try:
                     data = queue.get_nowait()
@@ -52,3 +53,8 @@ class CSVWriter(object):
 
     def insert_marker(self, queue):
         queue.put("$101$")
+
+    def to_bytes(self, n, length, endianess='big'):
+        h = '%x' % n
+        s = ('0'*(len(h) % 2) + h).zfill(length*2).decode('hex')
+        return s if endianess == 'big' else s[::-1]

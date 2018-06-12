@@ -137,8 +137,8 @@ class HTTPHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             self.closeConnection()
 
     def send_packet(self):
-    	packet = "".join(self.current_packet_list)
-    	writer_q.put(packet)
+        packet = "".join(self.current_packet_list)
+        writer_q.put(packet)
         self.byte_counter = 0
         del self.current_packet_list[:]
 
@@ -149,29 +149,29 @@ class HTTPHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             self.byte_counter += 1
             # logger.debug(hex(ord(byte)))
             if byte == 'G':
-				if self.byte_counter == 188:
-					if not self.in_sync:
-						logger.debug("We are in sync now")
-						self.in_sync = True
-					#logger.debug("Sync byte found after %i, resetting counter" % self.byte_counter)
-					self.send_packet()
+                if self.byte_counter == 188:
+                    if not self.in_sync:
+                        logger.debug("We are in sync now")
+                        self.in_sync = True
+                    #logger.debug("Sync byte found after %i, resetting counter" % self.byte_counter)
+                    self.send_packet()
 
-				elif self.byte_counter > 188:
-					if not self.in_sync:
-						logger.debug("Not in sync yet, sync byte found after %i, resetting counter" % self.byte_counter)
-						self.byte_counter = 0
-					else:
-						logger.error("We received a longer byte than expected: %i" % self.byte_counter)
-						self.send_packet()
+                elif self.byte_counter > 188:
+                    if not self.in_sync:
+                        logger.debug("Not in sync yet, sync byte found after %i, resetting counter" % self.byte_counter)
+                        self.byte_counter = 0
+                    else:
+                        logger.error("We received a longer byte than expected: %i" % self.byte_counter)
+                        self.send_packet()
 
-				# Check the current packet list does not get too long
-				if len(self.current_packet_list) > 1000:
-					logger.debug("Lise size is over 1000, something is wrong")
-					del self.current_packet_list[:]
+                # Check the current packet list does not get too long
+                if len(self.current_packet_list) > 1000:
+                    logger.debug("Lise size is over 1000, something is wrong")
+                    del self.current_packet_list[:]
 
-				# Append our new byte to the current list packet
-				if self.in_sync:
-					self.current_packet_list.append(byte)
+                # Append our new byte to the current list packet
+                if self.in_sync:
+                    self.current_packet_list.append(byte)
             else:
                 self.current_packet_list.append(byte)
 
@@ -502,7 +502,7 @@ def drop_privileges(uid_name, gid_name='nogroup'):
     os.setuid(running_uid)
 
     # Ensure a very conservative umask
-    old_umask = os.umask(077)
+    old_umask = os.umask(77)
 
     if os.getuid() == running_uid and os.getgid() == running_gid:
         # could be useful
@@ -573,7 +573,7 @@ def spawnVLC(cmd, delay = 0):
             try:
                 key = _winreg.OpenKey(reg, 'Software\AceStream')
             except:
-                print "Can't find AceStream!"
+                print ("Can't find AceStream!")
                 sys.exit(1)
             dir = _winreg.QueryValueEx(key, 'InstallDir')
             playerdir = os.path.dirname(dir[0] + '\\player\\')
@@ -591,7 +591,7 @@ def connectVLC():
             out_port=AceConfig.vlcoutport)
         return True
     except vlcclient.VlcException as e:
-        print repr(e)
+        print (repr(e))
         return False
 
 def spawnAce(cmd, delay = 0):
@@ -600,7 +600,7 @@ def spawnAce(cmd, delay = 0):
         try:
             key = _winreg.OpenKey(reg, 'Software\AceStream')
         except:
-            print "Can't find acestream!"
+            print ("Can't find acestream!")
             sys.exit(1)
         engine = _winreg.QueryValueEx(key, 'EnginePath')
         AceStuff.acedir = os.path.dirname(engine[0])
@@ -628,7 +628,7 @@ def detectPort():
     try:
         key = _winreg.OpenKey(reg, 'Software\AceStream')
     except:
-        print "Can't find AceStream!"
+        print ("Can't find AceStream!")
         sys.exit(1)
     engine = _winreg.QueryValueEx(key, 'EnginePath')
     AceStuff.acedir = os.path.dirname(engine[0])
