@@ -38,6 +38,7 @@ class CSVWriter(object):
                 except Empty:
                     # This should never happen
                     pass
+            f.flush()
         sched.shutdown()
 
     def hash_data(self, packet):

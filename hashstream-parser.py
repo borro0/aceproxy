@@ -115,7 +115,7 @@ class datalog:
         self.fd.seek(-1,1)
 
     def set_datapoint_value(self,val):
-        self.delaydata = self.delaydata + [0]*(self.cur_timestamp - len(self.delaydata) +1)
+        self.delaydata = self.delaydata + [0];
         self.delaydata[self.cur_timestamp-self.starttime] = val
 
 
