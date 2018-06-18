@@ -4,6 +4,7 @@ from Queue import Empty
 import hashlib
 from apscheduler.schedulers.background import BackgroundScheduler
 import logging
+import xxhash
 
 logging.getLogger('apscheduler.scheduler').setLevel('WARNING')
 logging.getLogger('apscheduler.executors.default').setLevel('WARNING')
@@ -22,20 +23,20 @@ class CSVWriter(object):
         sched.start()
 
     def writer(self, queue):
-        with open(self.filename, 'wb+') as f:
+        with open(self.filename, 'wb+',1024) as f:
             n = int(time.time()*10)
             f.write(self.to_bytes(n,8,endianess='big'))
-            while not queue.empty() or not stop_command.is_set():
+            while not stop_command.is_set():
                 try:
-                    data = queue.get_nowait()
-                    if len(data) < 6 and data == "$101$":
+                    data = queue.get(True,1)
+                    if len(data) < 6 and data == b'$101$':
                         f.write(b'\x00')
                     else:
                         hashed_data = self.hash_data(data)
                         # Floating point of time since epoch in seconds
                         # f.write("{0}|{1}\n,".format(str(hashed_data), ts))
 
-                        f.write(hashed_data[0] if hashed_data[0] != b'\x00' else b'\x01')
+                        f.write(hashed_data if hashed_data != b'\x00' else b'\x01')
                 except Empty:
                     # This should never happen
                     pass
@@ -43,16 +44,16 @@ class CSVWriter(object):
         sched.shutdown()
 
     def hash_data(self, packet):
-        hash_object = hashlib.sha1(packet)
-        hex_dig = hash_object.digest()
-        return hex_dig
+        hash_object = xxhash.xxh32(packet)
+        return hash_object.digest()[0]
+        
 
     def stop(self):
         global stop_command
         stop_command.set()
 
     def insert_marker(self, queue):
-        queue.put("$101$")
+        queue.put(b'$101$')
 
     def to_bytes(self, n, length, endianess='big'):
         h = '%x' % n
