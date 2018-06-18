@@ -145,8 +145,8 @@ class HTTPHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         # possible states: search for sync byte, in_sync
         #logger.debug("Reading a new data_chunk")        
         for byte in data_chunk:
-            self.byte_counter += 1
             # logger.debug(hex(ord(byte)))
+            self.byte_counter += 1
             if byte == 'G':
                 if self.byte_counter == 188:
                     if not self.in_sync:
@@ -164,16 +164,13 @@ class HTTPHandler(BaseHTTPServer.BaseHTTPRequestHandler):
                         logger.error("We received a longer byte than expected: %i" % self.byte_counter)
                         self.send_packet()
 
-                # Check the current packet list does not get too long
-                if len(self.current_packet_list) > 1000:
-                    logger.debug("Lise size is over 1000, something is wrong")
-                    del self.current_packet_list[:]
-
                 # Append our new byte to the current list packet
-                if self.in_sync:
-                    self.current_packet_list[self.byte_counter] = byte
+                if self.in_sync and self.byte_counter <= 188:
+                    self.current_packet_list[self.byte_counter-1] = byte
             else:
-                self.current_packet_list[self.byte_counter] = byte
+                if(self.byte_counter <= 188):
+                    self.current_packet_list[self.byte_counter-1] = byte
+
 
 
 
