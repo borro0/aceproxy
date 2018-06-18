@@ -4,4 +4,4 @@
 
 sleep 10
 
-curl --output /dev/null http://127.0.0.1:8000/pid/a399b7e2920975a72afe9854f269a1ecad77af2d/stream.mp4
+curl --output /dev/null http://127.0.0.1:8000/pid/31ed3696c78bf651c25a8759803c6345912a2a9e/stream.mp4
