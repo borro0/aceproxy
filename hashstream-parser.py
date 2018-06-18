@@ -3,6 +3,7 @@
 import sys
 import io
 import csv
+import datetime
 
 time_marker = 0x00
 
@@ -69,7 +70,7 @@ class datalog:
 
         self.starttime = int.from_bytes(self.fd.read(8),byteorder='big')
 
-        print( filename + "started at "+ str(self.starttime))
+        print( filename + "started at "+ datetime.datetime.fromtimestamp(self.starttime/10).strftime('%Y-%m-%d %H:%M:%S'))
         # self.timelength = int.frombytes(fd.read(4))
         #self.timelength = 10000
         self.cur_timestamp =self.starttime

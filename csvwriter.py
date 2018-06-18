@@ -35,7 +35,7 @@ class CSVWriter(object):
                         # Floating point of time since epoch in seconds
                         # f.write("{0}|{1}\n,".format(str(hashed_data), ts))
 
-                        f.write(hashed_data[0] if hashed_data[0] != 0 else 1)
+                        f.write(hashed_data[0] if hashed_data[0] != b'\x00' else b'\x01')
                 except Empty:
                     # This should never happen
                     pass
