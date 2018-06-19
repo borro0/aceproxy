@@ -25,7 +25,7 @@ class CSVWriter(object):
 
     def writer(self, queue):
         with open(self.filename, 'wb+',1024) as f:
-            n = int(time.time()*1000000)
+            n = int(time.time()*1000)
             f.write(self.to_bytes(n,8,endianess='big'))
             packet_counter = 0
             while not stop_command.is_set():
@@ -34,7 +34,7 @@ class CSVWriter(object):
                     if len(data) < 6 and data == b'$101$':
                         f.write(b'\x00')
 
-                        n = int(time.time()*1000000)
+                        n = int(time.time()*1000)
                         f.write(self.to_bytes(n,8,endianess='big'))
                         print(n)
 
@@ -45,7 +45,7 @@ class CSVWriter(object):
                         # write time marker every 240 packets
                         if packet_counter >= 240:
                             f.write(b'\x00')
-                            n = int(time.time()*1000000)
+                            n = int(time.time()*1000)
                             f.write(self.to_bytes(n,8,endianess='big'))
                             packet_counter = 0
 
