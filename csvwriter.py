@@ -33,10 +33,9 @@ class CSVWriter(object):
                     if len(data) < 6 and data == b'$101$':
                         f.write(b'\x00')
 
-                        n = int(uptime._uptime_linux()*10)
+                        n = int(time.time()*10)
                         f.write(self.to_bytes(n,8,endianess='big'))
                         print(n)
-                        # now we should receive 
 
                     else:
                         hashed_data = self.hash_data(data)
