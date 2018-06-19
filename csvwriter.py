@@ -5,6 +5,7 @@ import hashlib
 from apscheduler.schedulers.background import BackgroundScheduler
 import logging
 import xxhash
+import uptime
 
 logging.getLogger('apscheduler.scheduler').setLevel('WARNING')
 logging.getLogger('apscheduler.executors.default').setLevel('WARNING')
@@ -31,6 +32,12 @@ class CSVWriter(object):
                     data = queue.get(True,1)
                     if len(data) < 6 and data == b'$101$':
                         f.write(b'\x00')
+
+                        n = int(uptime._uptime_linux()*10)
+                        f.write(self.to_bytes(n,8,endianess='big'))
+                        print(n)
+                        # now we should receive 
+
                     else:
                         hashed_data = self.hash_data(data)
                         # Floating point of time since epoch in seconds
