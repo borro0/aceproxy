@@ -22,25 +22,25 @@ class parser:
 
     def parse_data(self, data_chunk):
         # possible states: search for sync byte, in_sync
-        #logger.debug("Reading a new data_chunk")        
+        #delaydata("Reading a new data_chunk")        
         for byte in data_chunk:
-            # logger.debug(hex(ord(byte)))
+            # print(hex(ord(byte)))
             self.byte_counter += 1
             if byte == 'G':
                 if self.byte_counter == 188:
                     if not self.in_sync:
-                        logger.debug("We are in sync now")
+                        print("We are in sync now")
                         self.in_sync = True
-                    #logger.debug("Sync byte found after %i, resetting counter" % self.byte_counter)
+                    #print("Sync byte found after %i, resetting counter" % self.byte_counter)
                     else:
                         self.send_packet()
 
                 elif self.byte_counter > 188:
                     if not self.in_sync:
-                        logger.debug("Not in sync yet, sync byte found after %i, resetting counter" % self.byte_counter)
+                        print("Not in sync yet, sync byte found after %i, resetting counter" % self.byte_counter)
                         self.byte_counter = 0
                     else:
-                        logger.error("We received a longer byte than expected: %i" % self.byte_counter)
+                        print("We received a longer byte than expected: %i" % self.byte_counter)
                         self.send_packet()
 
                 # Append our new byte to the current list packet

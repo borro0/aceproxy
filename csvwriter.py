@@ -5,6 +5,7 @@ import hashlib
 from apscheduler.schedulers.background import BackgroundScheduler
 import logging
 import xxhash
+import uptime
 
 logging.getLogger('apscheduler.scheduler').setLevel('WARNING')
 logging.getLogger('apscheduler.executors.default').setLevel('WARNING')
@@ -24,15 +25,30 @@ class CSVWriter(object):
 
     def writer(self, queue):
         with open(self.filename, 'wb+',1024) as f:
-            n = int(time.time()*10)
+            n = int(time.time()*1000)
             f.write(self.to_bytes(n,8,endianess='big'))
+            packet_counter = 0
             while not stop_command.is_set():
                 try:
                     data = queue.get(True,1)
                     if len(data) < 6 and data == b'$101$':
                         f.write(b'\x00')
+
+                        n = int(time.time()*1000)
+                        f.write(self.to_bytes(n,8,endianess='big'))
+                        print(n)
+
                     else:
                         hashed_data = self.hash_data(data)
+                        packet_counter += 1
+                        
+                        # write time marker every 240 packets
+                        if packet_counter >= 240:
+                            f.write(b'\x00')
+                            n = int(time.time()*1000)
+                            f.write(self.to_bytes(n,8,endianess='big'))
+                            packet_counter = 0
+
                         # Floating point of time since epoch in seconds
                         # f.write("{0}|{1}\n,".format(str(hashed_data), ts))
 
