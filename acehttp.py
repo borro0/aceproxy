@@ -8,6 +8,8 @@ Website: https://github.com/ValdikSS/AceProxy
 import traceback
 import gevent
 import gevent.monkey
+
+import socket
 # Monkeypatching and all the stuff
 
 # Custom Scripts
@@ -768,7 +770,7 @@ if AceConfig.osplatform == 'Windows':
 if __name__ == '__main__':
     # Custom output data inits #############
     # TODO Take filename from kwargs
-    output_filename = "OUTPUT"
+    output_filename = "OUTPUT-" + socket.gethostname()
     writer_q = Queue()
     csv_w = CSVWriter(output_filename, writer_q)
     w_process = Process(target=csv_w.writer, args=(writer_q,))
