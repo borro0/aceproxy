@@ -1,6 +1,8 @@
 #!/bin/sh
 
-../start-engine --client-console & python acehttp.py &
+hostname=$(hostname)
+
+../start-engine --client-console & python acehttp.py & bwm-ng -o csv > $hostname.csv &
 
 sleep 10
 
