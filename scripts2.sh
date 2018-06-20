@@ -1,6 +1,6 @@
 #!/bin/sh
 
-./acestream/start-engine --client-console & python ./acestream/aceproxy/acehttp.py &
+../start-engine --client-console & python acehttp.py &
 
 sleep 10
 
