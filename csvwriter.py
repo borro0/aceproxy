@@ -36,7 +36,7 @@ class CSVWriter(object):
 
                         n = int(time.time()*1000)
                         f.write(self.to_bytes(n,8,endianess='big'))
-                        print(n)
+                        # print(n)
 
                     else:
                         hashed_data = self.hash_data(data)
