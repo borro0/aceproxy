@@ -10,9 +10,9 @@
 # example: sudo ./scripts2.sh 0.5mbit 5kb 1ms 1%
 # buffersize should be proportional to rate, so 1mbit -> 10 kb | 10mbit -> 100kb
 
-tc qdisc del dev wlp2s0 root
-tc qdisc add dev wlp2s0 root handle 1:0 netem delay $3 loss $4
-tc qdisc add dev wlp2s0 parent 1:1 handle 10: tbf rate $1 buffer $2 latency 400ms
+tc qdisc del dev enp0s3 root
+tc qdisc add dev enp0s3 root handle 1:0 netem delay $3 loss $4
+tc qdisc add dev enp0s3 parent 1:1 handle 10: tbf rate $1 buffer $2 latency 400ms
 
 hostname=$(hostname)
 
