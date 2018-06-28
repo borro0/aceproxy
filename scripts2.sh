@@ -20,4 +20,4 @@ hostname=$(hostname)
 
 sleep 15
 
-curl --output /dev/null http://127.0.0.1:8000/pid/0bdf6de85fa5f2473d6a47210c598161d362d201/stream.mp4
+curl --output /dev/null http://127.0.0.1:8000/pid/be67c9a9b21bb5b2faaabf4fe4fea44e815dacc6/stream.mp4
